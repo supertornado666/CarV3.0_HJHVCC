@@ -1,0 +1,11 @@
+car\inv_mpu_dmp_motion_driver.o: ..\HARDWARE\eMPL\inv_mpu_dmp_motion_driver.c
+car\inv_mpu_dmp_motion_driver.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+car\inv_mpu_dmp_motion_driver.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+car\inv_mpu_dmp_motion_driver.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+car\inv_mpu_dmp_motion_driver.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+car\inv_mpu_dmp_motion_driver.o: E:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+car\inv_mpu_dmp_motion_driver.o: ..\HARDWARE\eMPL\inv_mpu.h
+car\inv_mpu_dmp_motion_driver.o: ../Core/Inc/stm32f1xx_it.h
+car\inv_mpu_dmp_motion_driver.o: ..\HARDWARE\eMPL\inv_mpu_dmp_motion_driver.h
+car\inv_mpu_dmp_motion_driver.o: ..\HARDWARE\eMPL\dmpKey.h
+car\inv_mpu_dmp_motion_driver.o: ..\HARDWARE\eMPL\dmpmap.h
