@@ -24,6 +24,7 @@
 /* USER CODE BEGIN Includes */
 #include "motor.h"
 #include "pid.h"
+#include "usart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -47,6 +48,7 @@ uint8_t Usart1_ReadBuf[256];	//串口1 缓冲数组
 uint8_t Usart1_ReadCount = 0;	//串口1 接收字节计数
 float Mileage = 0;
 extern uint8_t g_ucUsart3ReceiveData;  //保存串口三接收的数据
+extern uint8_t g_ucUsart2ReceiveData;
 extern uint8_t Car_Mode;
 /* USER CODE END PM */
 
@@ -70,6 +72,7 @@ extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim4;
 extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 extern UART_HandleTypeDef huart3;
 /* USER CODE BEGIN EV */
 
@@ -289,6 +292,20 @@ void USART1_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles USART2 global interrupt.
+  */
+void USART2_IRQHandler(void)
+{
+  /* USER CODE BEGIN USART2_IRQn 0 */
+
+  /* USER CODE END USART2_IRQn 0 */
+  HAL_UART_IRQHandler(&huart2);
+  /* USER CODE BEGIN USART2_IRQn 1 */
+
+  /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
   * @brief This function handles USART3 global interrupt.
   */
 void USART3_IRQHandler(void)
@@ -359,22 +376,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		if(g_ucUsart3ReceiveData == '+') Motor_AddSpeed();//加�??
 		if(g_ucUsart3ReceiveData == '-') Motor_MinusSpeed();//减�??
 		
-		//最多转90度，否则会旋转
-		if (g_ucUsart3ReceiveData == '(') {//逆时针转90度
+		//�?多转90度，否则会旋�?
+		if (g_ucUsart3ReceiveData == '(') {//逆时针转90�?
 			if (pidMPU6050YawMovement.target_val < 89){pidMPU6050YawMovement.target_val += 90;}	
 		}
-		if (g_ucUsart3ReceiveData == ')') {//顺时针转90度
+		if (g_ucUsart3ReceiveData == ')') {//顺时针转90�?
 			if (pidMPU6050YawMovement.target_val > -89){pidMPU6050YawMovement.target_val -= 90;}
 		}
 		
 		//更改模式
 		if (g_ucUsart3ReceiveData == 'M') {
-			if (Car_Mode == 5) {Car_Mode = 1;}
+			if (Car_Mode == 6) {Car_Mode = 1;}
 			else {Car_Mode++;}
 		}
 		if (g_ucUsart3ReceiveData == 'B') {Car_Mode = 0;}
 		
 		HAL_UART_Receive_IT( &huart3, &g_ucUsart3ReceiveData, 1);//继续进行中断接收
+	}
+	
+	if(huart == &huart2)//判断中断源 是否来自串口二
+	{
+		usartCamera_Receive_Data(g_ucUsart2ReceiveData);
+		
+		HAL_UART_Receive_IT(&huart2,&g_ucUsart2ReceiveData,1);  //启动串口二接收数据
 	}
 }
 /* USER CODE END 1 */

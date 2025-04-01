@@ -134,7 +134,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 		//延时消抖，是systick中断，要设置systick优先级高于外部中断且低于其他，保证其他中断能够先执行
 		HAL_Delay(10);
 		if(HAL_GPIO_ReadPin(KEY1_GPIO_Port, KEY1_Pin) == GPIO_PIN_SET){
-			if(Car_Mode == 5) Car_Mode = 1;
+			if(Car_Mode == 6) Car_Mode = 1;
 			else {Car_Mode++;}
 			HAL_GPIO_TogglePin(LED_GPIO_Port,LED_Pin);
 		}

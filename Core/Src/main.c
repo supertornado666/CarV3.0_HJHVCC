@@ -65,12 +65,14 @@ float g_fHW_PID_Out2;			//电机2的最后循迹PID控制速度
 float g_fHC_SR04_Read;			//跟随功能实际距离
 float g_fFollow_PID_Out;		//跟随功能应设速度
 uint8_t g_ucUsart3ReceiveData;  //保存串口三接收的数据
+uint8_t g_ucUsart2ReceiveData;  //保存串口二接收的数据
+extern int g_lHW_State;//帮助视觉调试 用于表示红外对管或者视觉摄像头识别状态
 uint8_t Car_Mode = 0;			//模式
 
 float pitch,roll,yaw; //俯仰�? 翻滚�? 航向�?
-float  g_fMPU6050YawMovePidOut = 0.00f; //姿态PID运算输出
-float  g_fMPU6050YawMovePidOut1 = 0.00f; //第一个电机控制输出
-float  g_fMPU6050YawMovePidOut2 = 0.00f; //第一个电机控制输出
+float  g_fMPU6050YawMovePidOut = 0.00f; //姿�?�PID运算输出
+float  g_fMPU6050YawMovePidOut1 = 0.00f; //第一个电机控制输�?
+float  g_fMPU6050YawMovePidOut2 = 0.00f; //第一个电机控制输�?
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -125,12 +127,13 @@ int main(void)
   MX_TIM4_Init();
   MX_ADC2_Init();
   MX_USART3_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 	OLED_Init();
 	OLED_Clear();
 	PID_Init();
 
-	HAL_Delay(500);//延时0.5秒 6050上电稳定后初始化
+	HAL_Delay(500);//延时0.5�? 6050上电稳定后初始化
 	MPU_Init();//初始化MPU6050
 	while(MPU_Init()!=0);
 	while(mpu_dmp_init()!=0);
@@ -144,6 +147,8 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim1);                //�?启定时器1 中断
 	__HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);	//�?启串�?1接收中断
 	HAL_UART_Receive_IT(&huart3,&g_ucUsart3ReceiveData,1);  //串口三接收数�?
+	HAL_UART_Receive_IT(&huart2,&g_ucUsart2ReceiveData,1);  //串口三接收数捿
+	__HAL_UART_ENABLE_IT(&huart2, UART_IT_ERR);// 启用UART2的错误中断功能
 
   /* USER CODE END 2 */
 
@@ -157,9 +162,9 @@ int main(void)
 	  
 /**************************固定显示当前模式*****************************************************/
 	sprintf((char *)OLEDString,"Mode:%d",Car_Mode);//模式
-	OLED_ShowString(0,6,OLEDString,12);
+	OLED_ShowString(0,7,OLEDString,12);
 
-	HAL_UART_Transmit(&huart3,( uint8_t *)Usart3String,strlen(( const  char *)Usart3String),50);//阻塞式发送鿚过串口三输出字笿 strlen:计算字符串大尿
+	HAL_UART_Transmit(&huart3,( uint8_t *)Usart3String,strlen(( const  char *)Usart3String),50);//阻塞式发送鿚过串口三输出字笿 strlen:计算字符串大�?
 	sprintf((char *)Usart3String,"Mode:%d\r\n",Car_Mode);//显示当前模式
 /**************************固定显示当前模式*****************************************************/
 
@@ -172,11 +177,11 @@ int main(void)
 		OLED_ShowString(0,1,OLEDString,12);
 		sprintf((char *)OLEDString,"Battery:%.2fV",adcGetBatteryVoltage());//电池电压
 		OLED_ShowString(0,2,OLEDString,12);
-		sprintf((char *)OLEDString,"HC_SR04:%.2fcm\r\n",HC_SR04_Read());//障碍物距离
+		sprintf((char *)OLEDString,"HC_SR04:%.2fcm\r\n",HC_SR04_Read());//障碍物距�?
 		OLED_ShowString(0,3,OLEDString,12);
-		sprintf((char *)OLEDString,"p:%.2f r:%.2f \r\n",pitch,roll);//俯仰角 翻滚角
+		sprintf((char *)OLEDString,"p:%.2f r:%.2f \r\n",pitch,roll);//俯仰�? 翻滚�?
 		OLED_ShowString(0,4,OLEDString,12);
-		sprintf((char *)OLEDString,"y:%.2f  \r\n",yaw);//航向角
+		sprintf((char *)OLEDString,"y:%.2f  \r\n",yaw);//航向�?
 		OLED_ShowString(0,5,OLEDString,12);
 /**************************OLED显示信息*****************************************************/
 	  
@@ -190,7 +195,7 @@ int main(void)
 		sprintf((char *)Usart3String,"HC_SR04:%.2fcm\r\n",HC_SR04_Read());//显示超声波数�?
 		HAL_UART_Transmit(&huart3,( uint8_t *)Usart3String,strlen(( const  char *)Usart3String),50);//通过串口三输出字�? strlen:计算字符串大�?	
 		
-		while(mpu_dmp_get_data(&pitch,&roll,&yaw)!=0){}  //这个可以解决经常读不出数据的问题
+		while(mpu_dmp_get_data(&pitch,&roll,&yaw)!=0);  //这个可以解决经常读不出数据的问题
 		sprintf((char *)Usart3String,"pitch:%.2f roll:%.2f yaw:%.2f\r\n",pitch,roll,yaw);//显示6050数据
 		HAL_UART_Transmit(&huart3,( uint8_t *)Usart3String,strlen(( const  char *)Usart3String),50);//通过串口三输出字�? strlen:计算字符串大�?	
 /**************************串口3/蓝牙显示信息*****************************************************/ 	  
@@ -250,7 +255,7 @@ int main(void)
 	
 	if (Car_Mode == 2){
 /****************************遥控模式*****************************************************/
-					/*在stm32f1xx_it.c中执行*/
+					/*在stm32f1xx_it.c中执�?*/
 /****************************遥控模式*****************************************************/
 	}
 	
@@ -305,7 +310,7 @@ int main(void)
 /***********************MPU6050航向角PID控制*****************************************************/
 		while(mpu_dmp_get_data(&pitch,&roll,&yaw)!=0){}  //这个可以解决经常读不出数据的问题
 			
-		g_fMPU6050YawMovePidOut = PID_Realize(&pidMPU6050YawMovement,yaw);//PID计算输出目标速度 这个速度，会和基础速度加减
+		g_fMPU6050YawMovePidOut = PID_Realize(&pidMPU6050YawMovement,yaw);//PID计算输出目标速度 这个速度，会和基�?速度加减
 
 		g_fMPU6050YawMovePidOut1 = 1.5 + g_fMPU6050YawMovePidOut;//基础速度加减PID输出速度
 		g_fMPU6050YawMovePidOut2 = 1.5 - g_fMPU6050YawMovePidOut;
@@ -315,6 +320,26 @@ int main(void)
 		if(g_fMPU6050YawMovePidOut2 < 0) g_fMPU6050YawMovePidOut2 = 0;
 		Motor_SetSpeed(g_fMPU6050YawMovePidOut1,g_fMPU6050YawMovePidOut2);
 /***********************MPU6050航向角PID控制*****************************************************/
+	}
+	
+	if(Car_Mode == 6){
+		sprintf((char*)OLEDString, "lHW:%d  ", g_lHW_State);//视觉识别结果
+		OLED_ShowString(0,6,OLEDString,12);
+	
+		g_fHW_PID_Out = PID_Realize(&pidOpenmv_Tracking,g_cThisState);//PID计算输出目标速度 这个速度，会和基础速度加减
+
+		g_fHW_PID_Out1 = 0.5 + g_fHW_PID_Out;//电机1速度=基础速度+循迹PID输出速度
+		g_fHW_PID_Out2 = 0.5 - g_fHW_PID_Out;//电机1速度=基础速度-循迹PID输出速度
+		if(g_fHW_PID_Out1 >1.2) g_fHW_PID_Out1 =1.2;//进行限幅 限幅速度在0-1.2之间
+		if(g_fHW_PID_Out1 <0) g_fHW_PID_Out1 =0;
+		if(g_fHW_PID_Out2 >1.2) g_fHW_PID_Out2 =1.2;//进行限幅 限幅速度在0-1.2之间
+		if(g_fHW_PID_Out2 <0) g_fHW_PID_Out2 =0;
+		if(g_cThisState != g_cLastState)//如何这次状态不等于上次状态、就进行改变目标速度和控制电机、在定时器中依旧定时控制电机
+		{
+			Motor_SetSpeed(g_fHW_PID_Out1,g_fHW_PID_Out2);//通过计算的速度控制电机
+		}
+		
+		g_cLastState = g_cThisState;//保存上次红外对管状态
 	}
 
 /***************************发�?�上位机******************************************************/	  

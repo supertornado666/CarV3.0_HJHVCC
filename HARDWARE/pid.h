@@ -18,6 +18,7 @@ extern tPid pidMotor2Speed;
 extern tPid pidHW_Tracking;
 extern tPid pidFollow;
 extern tPid pidMPU6050YawMovement;
+extern tPid pidOpenmv_Tracking;
 
 //声明函数
 float P_Realize(tPid * pid,float actual_val);

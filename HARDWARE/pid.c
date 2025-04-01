@@ -6,6 +6,7 @@ tPid pidMotor2Speed;//左轮pid参数
 tPid pidHW_Tracking;//红外循迹的PID
 tPid pidFollow;//跟随PID
 tPid pidMPU6050YawMovement;//利用6050偏航角 进行姿态控制的PID
+tPid pidOpenmv_Tracking;//openmv摄像头的PID结构体类型变量
 //给结构体类型变量赋初值
 void PID_Init()
 {
@@ -53,6 +54,15 @@ void PID_Init()
 	pidMPU6050YawMovement.Kp=0.02;
 	pidMPU6050YawMovement.Ki=0;
 	pidMPU6050YawMovement.Kd=0.1;
+	
+	pidOpenmv_Tracking.actual_val=0.0;
+	pidOpenmv_Tracking.target_val=0.00;//摄像头PID 的目标值为0
+	pidOpenmv_Tracking.err=0.0;
+	pidOpenmv_Tracking.err_last=0.0;
+	pidOpenmv_Tracking.err_sum=0.0;
+	pidOpenmv_Tracking.Kp=-0.4;//摄像头循迹PID的K和d先调整的小一些
+	pidOpenmv_Tracking.Ki=0;
+	pidOpenmv_Tracking.Kd=0.10;
 }
 //比例p调节控制函数
 float P_Realize(tPid * pid,float actual_val)
